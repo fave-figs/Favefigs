@@ -279,6 +279,14 @@ ${posts.slice(0, 20).map((p) => `  <item>
 }
 
 // ---------- build ----------
+// Safety check: if the site files are missing, stop the build so the
+// current live site stays up instead of being replaced by a broken one.
+for (const must of ["site/index.html", "site/styles.css", "site/settings.js", "admin/config.yml"]) {
+  if (!fs.existsSync(path.join(ROOT, must))) {
+    console.error(`\nMISSING FILE: ${must}\nUpload the "${must.split("/")[0]}" folder to GitHub, then deploy again.\n`);
+    process.exit(1);
+  }
+}
 fs.rmSync(OUT, { recursive: true, force: true });
 copyDir(path.join(ROOT, "site"), OUT);
 copyDir(path.join(ROOT, "admin"), path.join(OUT, "admin"));
