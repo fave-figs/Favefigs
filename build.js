@@ -2,8 +2,9 @@
   Fave Figs site builder
   ----------------------
   Netlify runs this automatically every time something changes.
-  It copies the site files, turns every blog post written in the editor
-  (content/blog/*.md) into its own web page, and makes the blog list,
+  It copies the site files, turns every blog post (written in the editor,
+  saved in content/blog/, plus any .md post files at the top level) into
+  its own web page, and makes the blog list,
   posts.json (for the home page) and sitemap.xml.
 
   You shouldn't need to edit this file.
@@ -147,13 +148,24 @@ document.getElementById("year").textContent = new Date().getFullYear();
 `;
 
 // ---------- read posts ----------
-function readPosts() {
+function postFiles() {
+  const list = [];
   const dir = path.join(ROOT, "content", "blog");
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((file) => {
-      const { data, content } = matter(fs.readFileSync(path.join(dir, file), "utf8"));
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir)) if (f.endsWith(".md")) list.push(path.join(dir, f));
+  }
+  // Posts uploaded straight to the top level also count (README.md doesn't)
+  for (const f of fs.readdirSync(ROOT)) {
+    if (f.endsWith(".md") && f.toLowerCase() !== "readme.md") list.push(path.join(ROOT, f));
+  }
+  return list;
+}
+
+function readPosts() {
+  return postFiles()
+    .map((full) => {
+      const file = path.basename(full);
+      const { data, content } = matter(fs.readFileSync(full, "utf8"));
       if (data.draft === true) return null;
       const slug = file.replace(/\.md$/, "");
       const html = renderBody(content);
@@ -279,17 +291,32 @@ ${posts.slice(0, 20).map((p) => `  <item>
 }
 
 // ---------- build ----------
-// Safety check: if the site files are missing, stop the build so the
-// current live site stays up instead of being replaced by a broken one.
-for (const must of ["site/index.html", "site/styles.css", "site/settings.js", "admin/config.yml"]) {
+// Safety check: if key files are missing, stop so the live site stays up.
+for (const must of ["index.html", "styles.css", "settings.js", "admin.html", "config.yml"]) {
   if (!fs.existsSync(path.join(ROOT, must))) {
-    console.error(`\nMISSING FILE: ${must}\nUpload the "${must.split("/")[0]}" folder to GitHub, then deploy again.\n`);
+    console.error(`\nMISSING FILE: ${must}\nUpload ${must} to GitHub, then deploy again.\n`);
     process.exit(1);
   }
 }
+
 fs.rmSync(OUT, { recursive: true, force: true });
-copyDir(path.join(ROOT, "site"), OUT);
-copyDir(path.join(ROOT, "admin"), path.join(OUT, "admin"));
+fs.mkdirSync(OUT, { recursive: true });
+
+// Copy the website files from the top level (skip the behind-the-scenes ones)
+const PUBLIC_TYPES = /\.(html|css|js|jpe?g|png|gif|webp|svg|ico|mp4|webm|pdf|txt|xml|json|woff2?)$/i;
+const SKIP = new Set(["build.js", "package.json", "package-lock.json", "admin.html"]);
+for (const f of fs.readdirSync(ROOT)) {
+  const full = path.join(ROOT, f);
+  if (!fs.statSync(full).isFile() || SKIP.has(f) || f.startsWith(".") || !PUBLIC_TYPES.test(f)) continue;
+  fs.copyFileSync(full, path.join(OUT, f));
+}
+
+// The blog editor lives at /admin
+fs.mkdirSync(path.join(OUT, "admin"), { recursive: true });
+fs.copyFileSync(path.join(ROOT, "admin.html"), path.join(OUT, "admin", "index.html"));
+fs.copyFileSync(path.join(ROOT, "config.yml"), path.join(OUT, "admin", "config.yml"));
+
+// Photos uploaded in the editor
 copyDir(path.join(ROOT, "images"), path.join(OUT, "images"));
 
 const posts = readPosts();
