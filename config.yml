@@ -1,0 +1,95 @@
+# Fave Figs blog editor settings (Decap CMS)
+# ------------------------------------------
+# The only line you might ever need to change is "repo" below:
+# it matches your GitHub username / repository name (fave-figs/Favefigs).
+
+backend:
+  name: github
+  repo: fave-figs/Favefigs
+  branch: main
+  commit_messages:
+    create: "New blog post: {{slug}}"
+    update: "Update blog post: {{slug}}"
+    delete: "Delete blog post: {{slug}}"
+    uploadMedia: "Upload photo: {{path}}"
+    deleteMedia: "Delete photo: {{path}}"
+
+site_url: https://favefigs.com
+display_url: https://favefigs.com
+logo_url: https://favefigs.com/logo.jpg
+
+media_folder: images/uploads
+public_folder: /images/uploads
+
+collections:
+  - name: blog
+    label: Blog posts
+    label_singular: Blog post
+    description: Write a post, press Publish, and it’s live on favefigs.com/blog in about a minute.
+    folder: content/blog
+    create: true
+    slug: "{{slug}}"
+    preview_path: "blog/{{slug}}/"
+    sortable_fields: ["date", "title"]
+    view_filters:
+      - { label: "Drafts", field: draft, pattern: true }
+    fields:
+      - label: Title
+        name: title
+        widget: string
+
+      - label: Publish date
+        name: date
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "MMM D, YYYY"
+        time_format: false
+
+      - label: Save as draft (hidden from the website)
+        name: draft
+        widget: boolean
+        default: false
+
+      - label: Cover photo
+        name: cover
+        widget: image
+        required: false
+        hint: Shows at the top of the post and on the blog card. Wide (landscape) photos look best.
+
+      - label: Cover photo description
+        name: cover_alt
+        widget: string
+        required: false
+        hint: Describe the photo in a few words, e.g. “Three Spider-Man minifigs on a white background.” Helps Google and screen readers.
+
+      - label: Summary
+        name: summary
+        widget: text
+        required: false
+        hint: 1–2 sentences shown on the blog card. Leave blank to use the start of the post.
+
+      - label: Post
+        name: body
+        widget: markdown
+        modes: ["rich_text", "raw"]
+        buttons: ["bold", "italic", "link", "heading-two", "heading-three", "quote", "bulleted-list", "numbered-list"]
+        editor_components: ["image"]
+        hint: To embed an Instagram post, paste its link on a line by itself.
+
+      - label: Search & sharing (SEO)
+        name: seo
+        widget: object
+        collapsed: true
+        required: false
+        summary: "{{fields.title}}"
+        fields:
+          - label: Search title
+            name: title
+            widget: string
+            required: false
+            hint: What shows as the blue link in Google. Aim for under 60 characters. Leave blank to use the post title.
+          - label: Search description
+            name: description
+            widget: text
+            required: false
+            hint: The gray text under the link in Google and in link previews. Aim for 120–155 characters. Leave blank to use the summary.

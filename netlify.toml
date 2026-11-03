@@ -1,0 +1,25 @@
+# Netlify reads this file to know how to build the site.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Old blog links (from the Google Sheet version) go to the new pages
+[[redirects]]
+  from = "/blog.html"
+  query = { post = ":post" }
+  to = "/blog/:post/"
+  status = 301
+
+[[redirects]]
+  from = "/blog.html"
+  to = "/blog/"
+  status = 301
+
+# Keep the editor out of search results
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"

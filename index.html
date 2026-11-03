@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Fave Figs. Blog Editor</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+  <!-- Decap CMS: the blog editor. It reads its setup from config.yml in this folder. -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // Make the editor's live preview look like the real site
+    CMS.registerPreviewStyle("https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;700&display=swap");
+    CMS.registerPreviewStyle("/styles.css");
+    CMS.registerPreviewStyle(".frame-content{padding:20px} body{background:#FDFDFD}", { raw: true });
+
+    var PostPreview = createClass({
+      render: function () {
+        var entry = this.props.entry;
+        var cover = entry.getIn(["data", "cover"]);
+        var coverAsset = cover ? this.props.getAsset(cover) : null;
+        var date = entry.getIn(["data", "date"]);
+        var nice = "";
+        if (date) {
+          var d = new Date(date);
+          if (!isNaN(d)) nice = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+        }
+        return h("div", { className: "blog-page" },
+          coverAsset ? h("div", { className: "post-cover" }, h("img", { src: coverAsset.toString(), alt: "" })) : null,
+          h("h1", { className: "post-title" }, entry.getIn(["data", "title"]) || "Untitled post"),
+          nice ? h("span", { className: "pill post-pill" }, nice) : null,
+          h("div", { className: "post-body" }, this.props.widgetFor("body"))
+        );
+      }
+    });
+    CMS.registerPreviewTemplate("blog", PostPreview);
+  </script>
+</body>
+</html>
