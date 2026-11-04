@@ -311,26 +311,20 @@ function showSpotlights(list) {
 }
 
 async function loadSpotlight() {
-  if (!SITE.spotlightSheet) return showSpotlights([SITE.spotlightFallback]);
+  // arrivals.json is made from the editor's "New arrivals" list each time the site rebuilds
   try {
-    const res = await fetch(SITE.spotlightSheet, { cache: "no-store" });
-    const rows = parseCSV(await res.text()).filter(r => r.some(c => c.trim()));
-    const head = rows.shift().map(h => h.trim().toLowerCase());
-    const items = rows.map((r, n) => {
-      const o = { _n: n };
-      head.forEach((h, i) => o[h] = (r[i] || "").trim());
-      o._t = Date.parse(o.date);
-      return o;
-    }).filter(o => o.title);
-    if (!items.length) throw new Error("empty sheet");
-    // Newest date first; rows without a readable date go last, in sheet order
-    items.sort((x, y) => {
-      const a = isNaN(x._t) ? -Infinity : x._t, b = isNaN(y._t) ? -Infinity : y._t;
-      return b - a || x._n - y._n;
-    });
+    const res = await fetch("/arrivals.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("no arrivals");
+    const items = await res.json();
+    if (!items.length) throw new Error("empty");
     showSpotlights(items.slice(0, SITE.spotlightMax || 50));
   } catch (e) {
-    showSpotlights([SITE.spotlightFallback]);
+    if (track.children.length) {          // cards already built into the page
+      nav.hidden = track.children.length < 2;
+      updateNav();
+    } else {
+      showSpotlights([SITE.spotlightFallback]);
+    }
   }
 }
 loadSpotlight();

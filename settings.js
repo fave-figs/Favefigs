@@ -19,16 +19,13 @@ const SITE = {
   // Coloring book cover (optional): put the image file in this folder and type its name, e.g. "book.jpg"
   bookCover: "",
 
-  // NEWEST ARRIVAL SPOTLIGHT
-  // Your published Google Sheet CSV link. Figs are shown newest date first; use the arrows to scroll.
-  // Sheet columns: date | title | description | image | link | type
-  // type is optional: write fig, set, or bricks and the tag reads "New fig", "New set"... (blank = "New arrival")
-  spotlightSheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbj3Hn8MfzWYyFyAXG9vSiu5CfeFcKUXMv4akDfr3KZevdxufMdp8Pug83OA9_t24-fOI2gk-g9Jdc/pub?output=csv",
+  // NEWEST ARRIVALS ("Just landed")
+  // Add, edit, hide, or remove listings in the editor: favefigs.com/admin → New arrivals.
 
   // How many of the newest items to show in the scroller
   spotlightMax: 50,
 
-  // Shown until the sheet is connected (or if the sheet can't be reached)
+  // Shown only if there are no listings to show
   spotlightFallback: {
     date: "",
     title: "Fresh faves just landed",

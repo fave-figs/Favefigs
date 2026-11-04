@@ -22,6 +22,66 @@ media_folder: images/uploads
 public_folder: /images/uploads
 
 collections:
+  - name: shop
+    label: New arrivals
+    description: The “Just landed” scroller on the home page. Newest date shows first. Press Publish and it’s live in about a minute.
+    editor:
+      preview: false
+    files:
+      - name: arrivals
+        label: New arrivals (Just landed)
+        file: listings.json
+        format: json
+        fields:
+          - label: Listings
+            name: items
+            widget: list
+            label_singular: listing
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.date}} · {{fields.title}}"
+            fields:
+              - label: Name
+                name: title
+                widget: string
+                hint: e.g. “C-3PO – Pearl Light Gold” or “75192 Millennium Falcon”
+              - label: Type
+                name: type
+                widget: select
+                options: ["Fig", "Set", "Bricks"]
+                default: "Fig"
+              - label: Date added
+                name: date
+                widget: datetime
+                format: "YYYY-MM-DD"
+                date_format: "MMM D, YYYY"
+                time_format: false
+              - label: Photo
+                name: photo
+                widget: image
+                required: false
+                hint: Landscape photos fit best. Keep the item centered.
+              - label: Photo description
+                name: photo_alt
+                widget: string
+                required: false
+                hint: A few words describing the photo (helps Google and screen readers).
+              - label: Description
+                name: description
+                widget: text
+                required: false
+                hint: Condition notes, what's included, etc.
+              - label: Shop link
+                name: link
+                widget: string
+                required: false
+                hint: Your BrickLink or eBay listing. This is where “Shop this fave” goes.
+              - label: Show on site
+                name: show
+                widget: boolean
+                default: true
+                hint: Turn off to hide a sold item without deleting it.
+
   - name: blog
     label: Blog posts
     label_singular: Blog post

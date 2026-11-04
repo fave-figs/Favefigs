@@ -189,6 +189,49 @@ function readPosts() {
     .sort((a, b) => (b.date || 0) - (a.date || 0));
 }
 
+// ---------- new arrivals (from the editor's listings.json) ----------
+function readListings() {
+  const file = path.join(ROOT, "listings.json");
+  if (!fs.existsSync(file)) return [];
+  let data;
+  try { data = JSON.parse(fs.readFileSync(file, "utf8")); }
+  catch (e) { console.error("listings.json couldn't be read:", e.message); return []; }
+  return (data.items || [])
+    .filter((it) => it && it.title && it.show !== false)
+    .map((it, n) => {
+      const dt = toDate(it.date);
+      return {
+        title: it.title,
+        type: it.type || "",
+        date: isoDate(dt),
+        description: it.description || "",
+        link: it.link || "",
+        image: it.photo ? img(it.photo, 1000) : "",
+        alt: it.photo_alt || it.title,
+        _t: dt ? dt.getTime() : -Infinity,
+        _n: n,
+      };
+    })
+    .sort((a, b) => b._t - a._t || a._n - b._n)
+    .map(({ _t, _n, ...rest }) => rest);
+}
+
+// Same card the home page script makes, built right into the page for Google
+function arrivalCard(it) {
+  const tag = it.type ? "New " + it.type.toLowerCase() : "New arrival";
+  const date = it.date ? niceDate(toDate(it.date)).replace(/, \d{4}$/, "") : "";
+  return `<article class="spot">
+          <div class="spot-media">${it.image
+            ? `<img src="${esc(it.image)}" alt="${esc(it.alt)}" loading="lazy">`
+            : `<img class="placeholder" src="logo.jpg" alt="">`}</div>
+          <div class="spot-body">
+            <div class="spot-meta"><span class="pill">${esc(tag)}</span><span class="d">${esc(date)}</span></div>
+            <h3>${esc(it.title)}</h3>${it.description ? `<p>${esc(it.description)}</p>` : "<p></p>"}
+            ${it.link ? `<a class="btn" href="${esc(it.link)}" target="_blank" rel="noopener">Shop this fave</a>` : ""}
+          </div>
+        </article>`;
+}
+
 // ---------- pages ----------
 function postPage(p) {
   const url = SITE_URL + p.url;
@@ -304,7 +347,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 // Copy the website files from the top level (skip the behind-the-scenes ones)
 const PUBLIC_TYPES = /\.(html|css|js|jpe?g|png|gif|webp|svg|ico|mp4|webm|pdf|txt|xml|json|woff2?)$/i;
-const SKIP = new Set(["build.js", "package.json", "package-lock.json", "admin.html"]);
+const SKIP = new Set(["build.js", "package.json", "package-lock.json", "admin.html", "listings.json"]);
 for (const f of fs.readdirSync(ROOT)) {
   const full = path.join(ROOT, f);
   if (!fs.statSync(full).isFile() || SKIP.has(f) || f.startsWith(".") || !PUBLIC_TYPES.test(f)) continue;
@@ -328,6 +371,16 @@ writeFile("posts.json", JSON.stringify(posts.map((p) => ({
   image: p.cover ? img(p.cover, 600) : "",
 })), null, 2));
 writeFile("sitemap.xml", sitemap(posts));
+
+const arrivals = readListings();
+writeFile("arrivals.json", JSON.stringify(arrivals, null, 2));
+const homeFile = path.join(OUT, "index.html");
+const home = fs.readFileSync(homeFile, "utf8");
+const TRACK = '<div class="spot-track" id="spotTrack" tabindex="0" aria-label="Newest arrivals">';
+if (home.includes(TRACK + "</div>") && arrivals.length) {
+  fs.writeFileSync(homeFile, home.replace(TRACK + "</div>",
+    TRACK + "\n        " + arrivals.slice(0, 50).map(arrivalCard).join("\n        ") + "\n      </div>"));
+}
 writeFile("robots.txt", `User-agent: *\nAllow: /\nDisallow: /thanks.html\nDisallow: /admin/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
-console.log(`Built ${posts.length} blog post(s) into /dist`);
+console.log(`Built ${posts.length} blog post(s) and ${arrivals.length} new arrival(s) into /dist`);
