@@ -47,20 +47,23 @@ collections:
                 hint: e.g. “C-3PO – Pearl Light Gold” or “75192 Millennium Falcon”
               - label: Type
                 name: type
-                widget: select
-                options: ["Fig", "Set", "Bricks"]
+                widget: string
                 default: "Fig"
+                hint: e.g. Fig, Set, Bricks, Storage Head, DINO! — the tag on the card reads “New fig”, “New set”…
               - label: Date added
                 name: date
                 widget: datetime
+                required: false
                 format: "YYYY-MM-DD"
                 date_format: "MMM D, YYYY"
                 time_format: false
+                hint: Newest dates show first. Items with no date go at the end.
               - label: Photo
                 name: photo
                 widget: image
                 required: false
-                hint: Landscape photos fit best. Keep the item centered.
+                choose_url: true
+                hint: Upload a photo, or paste a photo link (like a BrickLink image address). Landscape photos fit best.
               - label: Photo description
                 name: photo_alt
                 widget: string
