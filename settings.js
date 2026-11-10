@@ -11,7 +11,7 @@ const SITE = {
   // Shop + social links
   bricklink:    "https://store.bricklink.com/Nephilump#/shop?o={%22sort%22:9,%22desc%22:1,%22showHomeItems%22:0,%22showNewest%22:1}",
   ebay:         "https://ebay.com/usr/favefigs",
-  brickowl:     "",   // ← paste your Brick Owl store link here when you have it
+  brickowl:     "https://favefigs.brickowl.com",   // ← paste your Brick Owl store link here when you have it
   coloringBook: "https://amzn.eu/d/0cABkXwr",   // ← swap for the amazon.com link
   instagram:    "https://www.instagram.com/fave_figs",
   email:        "favefigs@gmail.com",   // ← your contact email, e.g. "hello@favefigs.com"
